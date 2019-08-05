@@ -1,1 +1,8 @@
 .DS_Store
+.jar
+.zip
+.class
+.xml
+.history
+.idea
+.iml
