@@ -1,16 +1,40 @@
-name := course.value + "-" + assignment.value
+name := course.value ++ "-" ++ assignment.value
 
 scalaVersion := "2.11.12"
 
-scalacOptions ++= Seq("-deprecation")
+scalacOptions ++= Seq(
+  "-feature",
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-unchecked",
+  "-Xlint",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-value-discard",
+  "-Xfuture",
+  "-Xexperimental"
+)
 
-// grading libraries
-libraryDependencies += "junit" % "junit" % "4.10" % Test
+scalacOptions in Test += "-Ywarn-value-discard:false" // since this often appears in expectNext(expected) testing style in streams
 
-// for funsets
-libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+val akkaVersion = "2.5.21"
+val akkaHttpVersion = "10.1.8"
 
-// include the common dir
-commonSourcePackages += "common"
+libraryDependencies ++= Seq(
+  "com.typesafe.akka"        %% "akka-stream"              % akkaVersion,
+  "com.typesafe.akka"        %% "akka-stream-testkit"      % akkaVersion % Test,
+  "com.typesafe.akka"        %% "akka-stream-typed"        % akkaVersion,
 
-courseId := "bRPXgjY9EeW6RApRXdjJPw"
+  // to be used slightly in followers example
+  "com.typesafe.akka"        %% "akka-actor-typed"         % akkaVersion,
+
+  // Used by protocols assignment
+  "com.typesafe.akka"        %% "akka-actor-testkit-typed" % akkaVersion % Test,
+
+  "org.scalacheck"           %% "scalacheck"               % "1.13.5"    % Test,
+  "junit"                    % "junit"                     % "4.10"      % Test
+)
+
+courseId := "changeme"
+
+parallelExecution in Test := false

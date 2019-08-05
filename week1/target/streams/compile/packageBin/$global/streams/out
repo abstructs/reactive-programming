@@ -1,15 +1,29 @@
-[0m[[0m[0minfo[0m] [0m[0mPackaging /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/progfun1-example_2.11-0.1.0-SNAPSHOT.jar ...[0m
+[0m[[0m[0minfo[0m] [0m[0mPackaging /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/reactive-async_2.11-0.1.0-SNAPSHOT.jar ...[0m
 [0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	example[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/example[0m
-[0m[[0m[0mdebug[0m] [0m[0m	common/package$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/common/package$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	common/package.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/common/package.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	common[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/common[0m
-[0m[[0m[0mdebug[0m] [0m[0m	example/Lists.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/example/Lists.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	example/Lists$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/example/Lists$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$CallbackBasedApi.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$CallbackBasedApi.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$recoverFailure$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$recoverFailure$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$FutureAPIImpl$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$FutureAPIImpl$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$sequenceComputations$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$sequenceComputations$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$transformSuccess$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$transformSuccess$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$recoverFailure$1$$anonfun$applyOrElse$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$recoverFailure$1$$anonfun$applyOrElse$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$FutureBasedApi.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$FutureBasedApi.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$FutureAPIImpl$1$$anonfun$computeIntAsync$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$FutureAPIImpl$1$$anonfun$computeIntAsync$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$insist$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$insist$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	async/Async$$anonfun$sequenceComputations$1$$anonfun$apply$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/abstruct/Desktop/reactive-programming/week1/target/scala-2.11/classes/async/Async$$anonfun$sequenceComputations$1$$anonfun$apply$1.class[0m
 [0m[[0m[0minfo[0m] [0m[0mDone packaging.[0m
