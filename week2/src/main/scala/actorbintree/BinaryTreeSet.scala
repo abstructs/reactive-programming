@@ -219,7 +219,7 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
         context.become(copying(expected, true))
       }
     }
-  }p
+  }
 
   def handleInsert(op: Insert): Unit = {
     if (op.elem == elem) {
