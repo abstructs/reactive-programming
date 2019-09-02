@@ -12,17 +12,24 @@ object BinaryTreeSet {
     val system = ActorSystem("test")
     val client = system.actorOf(Props(classOf[BinaryTreeSet]))
 
-    client.tell(Insert(client, id=100, elem=1), client)
-    client.tell(Contains(client, id=50, elem=2), client)
-    client.tell(Contains(client, id=60, elem=1), client)
-    client.tell(Remove(client, id=70, elem=1), client)
-    client.tell(Contains(client, id=80, elem=1), client)
-    client.tell(Insert(client, id=90, elem=1), client)
-    client.tell(Contains(client, id=110, elem=1), client)
-    client.tell(Remove(client, id=120, elem=1), client)
-    client.tell(Insert(client, id=130, elem=2), client)
-    client.tell(Contains(client, id=140, elem=1), client)
-    client.tell(Contains(client, id=150, elem=2), client)
+    client.tell(Insert(client, id=1, elem=1), client)
+    client.tell(Contains(client, id=2, elem=2), client)
+    client.tell(Contains(client, id=3, elem=1), client)
+    client.tell(Remove(client, id=4, elem=1), client)
+    client.tell(Contains(client, id=5, elem=1), client)
+    client.tell(Insert(client, id=6, elem=1), client)
+    client.tell(Contains(client, id=7, elem=1), client)
+    client.tell(Remove(client, id=8, elem=1), client)
+    client.tell(Insert(client, id=9, elem=2), client)
+    client.tell(Contains(client, id=10, elem=1), client)
+    client.tell(Contains(client, id=1, elem=2), client)
+    client.tell(Remove(client, id=12, elem=1), client)
+
+    client.tell(GC, client)
+
+    client.tell(Insert(client, id=20, elem=1), client)
+    client.tell(Contains(client, id=22, elem=1), client)
+    client.tell(Contains(client, id=23, elem=2), client)
   }
 
   trait Operation {
@@ -67,6 +74,7 @@ object BinaryTreeSet {
 }
 
 class BinaryTreeSet extends Actor {
+
   import BinaryTreeSet._
   import BinaryTreeNode._
 
@@ -78,22 +86,47 @@ class BinaryTreeSet extends Actor {
   var pendingQueue = Queue.empty[Operation]
 
   // optional
-  def receive= normal
+  def receive = normal
 
   // optional
   /** Accepts `Operation` and `GC` messages. */
   val normal: Receive = {
-    case OperationFinished(id) => onOperationFinished(OperationFinished(id))
-    case ContainsResult(id, res) => onOperationFinished(ContainsResult(id, res))
-    case op: Operation => handleOperation(op)
+    case OperationFinished(id) => {
+      printReply(OperationFinished(id))
+      processNext
+    }
+    case ContainsResult(id, res) => {
+      printReply(ContainsResult(id, res))
+      processNext
+    }
+    case op: Operation => root.tell(op, op.requester)
+    case GC => {
+      val newRoot = createRoot
+      root.tell(CopyTo(newRoot), self)
+      context.become(garbageCollecting(newRoot))
+    }
   }
 
-  private def handleOperation(op: Operation): Unit = {
-    if(pendingQueue.isEmpty) {
-      root.tell(op, op.requester)
-    } else {
+  // optional
+  /** Handles messages while garbage collection is performed.
+    * `newRoot` is the root of the new binary tree where we want to copy
+    * all non-removed elements into.
+    */
+  def garbageCollecting(newRoot: ActorRef): Receive = {
+    case op: Operation => {
+      printf("Operation received during GC: { id: %s, queueSize: ", op.id)
       pendingQueue = pendingQueue.enqueue(op)
+      printf("%s }\n", pendingQueue.size)
     }
+    case CopyFinished => {
+      println("Manager copy finished")
+      root = newRoot
+      context.become(normal)
+      processNext
+    }
+    case GC => printf("Already garbage collection")
+    case OperationFinished(id) => printReply(OperationFinished(id))
+    case ContainsResult(id, res) => printReply(ContainsResult(id, res))
   }
 
   private def printReply: (OperationReply) => Unit = {
@@ -104,24 +137,10 @@ class BinaryTreeSet extends Actor {
   private def processNext: Unit = {
     if (!pendingQueue.isEmpty) {
       val (nextOp, newQueue) = pendingQueue.dequeue
-      receive(nextOp)
-
       pendingQueue = newQueue
+      receive(nextOp)
     }
   }
-
-  private def onOperationFinished(op: OperationReply): Unit = {
-    printReply(op)
-    processNext
-  }
-
-  // optional
-  /** Handles messages while garbage collection is performed.
-    * `newRoot` is the root of the new binary tree where we want to copy
-    * all non-removed elements into.
-    */
-  def garbageCollecting(newRoot: ActorRef): Receive = ???
-
 }
 
 object BinaryTreeNode {
@@ -143,6 +162,65 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
   var subtrees = Map[Position, ActorRef]()
   var removed = initiallyRemoved
 
+  def receive = normal
+
+  /** Handles `Operation` messages and `CopyTo` requests. */
+  val normal: Receive = {
+    case Insert(requester, id, newElem) => handleInsert(Insert(requester, id, newElem))
+    case Contains(requester, id, elemToFind) => handleContains(Contains(requester, id, elemToFind))
+    case Remove(requester, id, elemToRemove) => handleRemove(Remove(requester, id, elemToRemove))
+    case CopyTo(treeNode) => {
+      printf("Received copy to, { elem: %s, removed: %s }\n", elem, removed)
+
+      if (context.children.isEmpty && this.removed) { // No work to do
+        context.parent ! CopyFinished
+      } else {
+        // copy self
+        if(!removed) {
+          treeNode ! Insert(self, -1, elem)
+        }
+
+        // copy children
+        for {
+          child <- context.children
+        } child ! CopyTo(treeNode)
+
+        // await copies to finish
+        context.become(copying(context.children.toSet, removed))
+      }
+    }
+  }
+
+  // optional
+  /** `expected` is the set of ActorRefs whose replies we are waiting for,
+    * `insertConfirmed` tracks whether the copy of this node to the new tree has been confirmed.
+    */
+  def copying(expected: Set[ActorRef], insertConfirmed: Boolean): Receive = {
+    // child completed
+    case CopyFinished => {
+      val newExpected = expected - context.sender
+      // printf("Copy finished, { elem: %s, insertConfirmed: %s, childrenSize: %s }\n", elem, insertConfirmed, newExpected.size)
+      // done copying
+      if(insertConfirmed && newExpected.isEmpty) {
+        context.parent ! CopyFinished
+      } else {
+        // waiting for parent or children
+        context.become(copying(newExpected, insertConfirmed))
+      }
+    }
+    // self completed
+    case OperationFinished(_) => {
+//      printf("Operation finished, { elem: %s, expectedSize: %s }\n", elem, expected.size)
+      // no children to wait for
+      if(expected.isEmpty) {
+        context.parent ! CopyFinished
+      } else {
+        // current node copied but children to wait for
+        context.become(copying(expected, true))
+      }
+    }
+  }p
+
   def handleInsert(op: Insert): Unit = {
     if (op.elem == elem) {
       if (removed) {
@@ -160,11 +238,11 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
 
       subtrees += (position -> newNode)
 
-      op.requester.tell(OperationFinished(op.id), self)
+      op.requester ! OperationFinished(op.id)
     }
   }
 
-  def handleContains(op: Operation): Unit = {
+  def handleContains(op: Contains): Unit = {
     if (op.elem == elem) {
       op.requester.tell(ContainsResult(op.id, !removed), self)
     } else if (op.elem > elem && subtrees.contains(Right)) {
@@ -176,7 +254,7 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
     }
   }
 
-  def handleRemove(op: Operation): Unit = {
+  def handleRemove(op: Remove): Unit = {
     if (op.elem == elem && !removed) {
       removed = true
       op.requester.tell(OperationFinished(op.id), self)
@@ -188,23 +266,4 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
       op.requester.tell(OperationFinished(op.id), self)
     }
   }
-
-  // optional
-  def receive = normal
-
-  // optional
-  /** Handles `Operation` messages and `CopyTo` requests. */
-  val normal: Receive = {
-    case Insert(requester, id, newElem) => handleInsert(Insert(requester, id, newElem))
-    case Contains(requester, id, elemToFind) => handleContains(Contains(requester, id, elemToFind))
-    case Remove(requester, id, elemToRemove) => handleRemove(Remove(requester, id, elemToRemove))
-  }
-
-  // optional
-  /** `expected` is the set of ActorRefs whose replies we are waiting for,
-    * `insertConfirmed` tracks whether the copy of this node to the new tree has been confirmed.
-    */
-  def copying(expected: Set[ActorRef], insertConfirmed: Boolean): Receive = ???
-
-
 }
